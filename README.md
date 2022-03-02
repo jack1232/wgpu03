@@ -3,7 +3,7 @@
 
 This is the source code for the third videos of the series on step-by-step Rust *wgpu* graphics programming.
 
-This sample *wgpu** app creates a colorful triangle. The output from this app is shown in the following image.
+This sample *wgpu* app creates a colorful triangle. The output from this app is shown in the following image.
 
 ![wg02-01](src/images/image01.png)
 
