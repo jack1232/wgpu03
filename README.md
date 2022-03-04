@@ -1,7 +1,7 @@
 # Rust *wgpu* Graphics Programming: Step-By-Step (3) 
 ## Create First Triangle with the *wgpu* API
 
-This is the source code for the third videos of the series on step-by-step Rust *wgpu* graphics programming.
+This is the source code for third video of the YouTube series on step-by-step Rust *wgpu* graphics programming.
 
 This sample *wgpu* app creates a colorful triangle. The output from this app is shown in the following image.
 
