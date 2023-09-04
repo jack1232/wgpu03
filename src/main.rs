@@ -3,12 +3,14 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
     window::Window,
 };
-//use std::borrow::Cow;
 
-pub async fn run(event_loop: EventLoop<()>, window: Window) {      
+pub async fn run(event_loop: EventLoop<()>, window: &Window) {      
     let size = window.inner_size();
-    let instance = wgpu::Instance::new(wgpu::Backends::DX12);
-    let surface = unsafe { instance.create_surface(&window) };
+    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+        backends: wgpu::Backends::DX12,
+        dx12_shader_compiler: Default::default(),
+    });
+    let surface = unsafe { instance.create_surface(&window) }.unwrap();
     let adapter = instance
         .request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::default(),
@@ -30,13 +32,17 @@ pub async fn run(event_loop: EventLoop<()>, window: Window) {
         .await
         .expect("Failed to create device");
 
-    let format = surface.get_supported_formats(&adapter)[0];
+    let surface_caps = surface.get_capabilities(&adapter);
+    let format = surface_caps.formats[0];
+
     let mut config = wgpu::SurfaceConfiguration {
         usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        format: format,
+        format,
         width: size.width,
         height: size.height,
-        present_mode: wgpu::PresentMode::Mailbox,
+        present_mode: wgpu::PresentMode::Fifo,
+        alpha_mode:surface_caps.alpha_modes[0],
+        view_formats: vec![],
     };
     surface.configure(&device, &config);
 
@@ -64,7 +70,7 @@ pub async fn run(event_loop: EventLoop<()>, window: Window) {
             module: &shader,
             entry_point: "fs_main",
             targets: &[Some(wgpu::ColorTargetState {
-                format: format,
+                format,
                 blend: Some(wgpu::BlendState {
                     color: wgpu::BlendComponent::REPLACE,
                     alpha: wgpu::BlendComponent::REPLACE,
@@ -88,6 +94,7 @@ pub async fn run(event_loop: EventLoop<()>, window: Window) {
                 ..
             } => {
                 // Recreate the surface with the new size
+                instance.poll_all(true);
                 config.width = size.width;
                 config.height = size.height;
                 surface.configure(&device, &config);
@@ -130,5 +137,5 @@ fn main() {
     let window = winit::window::Window::new(&event_loop).unwrap(); 
     window.set_title("wgpu03: triangle");
     env_logger::init();
-    pollster::block_on( run(event_loop, window));    
+    pollster::block_on( run(event_loop, &window));    
 }
